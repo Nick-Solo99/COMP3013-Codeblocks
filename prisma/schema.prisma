@@ -1,0 +1,16 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+  output        = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Block {
+  id    Int    @id @default(autoincrement())
+  title String
+  code  String
+}
