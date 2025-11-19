@@ -26,20 +26,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-      <header className="navbar bg-primary justify-between">
+        <header className="navbar bg-primary justify-between">
           <Link href="/">
-              <h1 className="text-3xl font-semibold text-primary-content hover:text-secondary">Code Blocks</h1>
+            <h1 className="text-3xl font-semibold text-primary-content hover:text-secondary">
+              Code Blocks
+            </h1>
           </Link>
-          <Link
-              href="/blocks/create"
-              className="btn btn-accent"
-          >
-              + Create Block
+          <Link href="/blocks/create" className="btn btn-accent">
+            + Create Block
           </Link>
-      </header>
-      <main>
-          {children}
-      </main>
+        </header>
+        <main>{children}</main>
       </body>
     </html>
   );
