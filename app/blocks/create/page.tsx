@@ -1,8 +1,20 @@
 import { bundledLanguages } from "shiki";
 import { prisma } from "@/database";
 import { redirect } from "next/navigation";
+import { auth } from "@/app/utils/auth";
+import { headers } from "next/headers";
 
-export default function CreateBlock() {
+export default async function CreateBlock() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect(`/auth/login`);
+  }
+
+  const userId = session.user.id;
+
   async function addBlock(formData: FormData) {
     "use server";
     const title = formData.get("title") as string;
@@ -14,10 +26,9 @@ export default function CreateBlock() {
         title,
         lang,
         code,
+        userId,
       },
     });
-
-    console.log(block);
     redirect("/blocks/" + block.id);
   }
 

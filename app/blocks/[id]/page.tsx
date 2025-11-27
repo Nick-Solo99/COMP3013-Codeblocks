@@ -3,6 +3,9 @@ import { createHighlighter } from "shiki";
 import Link from "next/link";
 import DeleteButton from "./DeleteButton";
 import { redirect } from "next/navigation";
+import Image from "next/image";
+import { auth } from "@/app/utils/auth";
+import { headers } from "next/headers";
 
 type Params = { params: { id: string } };
 
@@ -10,10 +13,21 @@ export default async function ShowBlock({ params }: Params) {
   const { id } = await params;
   const block = await prisma.block.findUnique({
     where: { id: Number(id) },
+    include: {
+      user: true,
+    },
+  });
+  const session = await auth.api.getSession({
+    headers: await headers(),
   });
 
   async function deleteBlock(blockId: number): Promise<void> {
     "use server";
+
+    if (session?.user?.id !== block?.user?.id) {
+      return redirect(`/blocks/${blockId}`);
+    }
+
     await prisma.block.delete({
       where: { id: blockId },
     });
@@ -41,12 +55,31 @@ export default async function ShowBlock({ params }: Params) {
   });
   return (
     <div className="hero p-5">
-      <div className="card bg-base-200 min-w-72 p-5">
-        <div className="card-actions justify-end">
-          <Link href={`/blocks/${id}/edit`}>
-            <span className="btn btn-warning btn-outline btn-circle">📝</span>
-          </Link>
-          <DeleteButton block={block} action={deleteBlock} />
+      <div className="card bg-base-200 w-xl p-5">
+        <div className="card-actions justify-between items-center">
+          <div className="flex gap-4 items-center">
+            <div className="avatar ">
+              <div className="ring-primary ring-offset-base-100 w-10 rounded-full ring-2 ring-offset-2">
+                <Image
+                  src={block.user.image!}
+                  alt="Profile Picture"
+                  width={400}
+                  height={400}
+                />
+              </div>
+            </div>
+            <p className="text-secondary">{block.user.name}</p>
+          </div>
+          {session?.user?.id === block.user.id && (
+            <div className="flex gap-1">
+              <Link href={`/blocks/${id}/edit`}>
+                <span className="btn btn-warning btn-outline btn-circle">
+                  📝
+                </span>
+              </Link>
+              <DeleteButton block={block} action={deleteBlock} />
+            </div>
+          )}
         </div>
         <h2 className="text-4xl text-center text-primary font-semibold">
           {block.title}

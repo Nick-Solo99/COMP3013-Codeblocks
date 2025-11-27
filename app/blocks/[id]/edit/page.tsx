@@ -1,6 +1,8 @@
 import { prisma } from "@/database";
 import { bundledLanguages } from "shiki";
 import { redirect } from "next/navigation";
+import { auth } from "@/app/utils/auth";
+import { headers } from "next/headers";
 
 type Params = { params: { id: string } };
 
@@ -9,6 +11,13 @@ export default async function EditBlock({ params }: Params) {
   const block = await prisma.block.findUnique({
     where: { id: Number(id) },
   });
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session?.user?.id !== block?.userId) {
+    return redirect(`/blocks/${id}`);
+  }
 
   async function updateBlock(formData: FormData) {
     "use server";
